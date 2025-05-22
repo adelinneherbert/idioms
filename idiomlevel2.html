@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>🧠 Idiom Games: CEFR A2 – Time Bomb</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body { font-family: sans-serif; padding: 20px; text-align: center; background: #f0f0f0; }
+    .hidden { display: none; }
+    .button { padding: 12px 24px; margin: 10px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; }
+    .button:hover { background: #0056b3; }
+    .option { display: block; margin: 10px auto; padding: 12px; background: #fff; border: 1px solid #ccc; border-radius: 6px; width: 90%; max-width: 400px; cursor: pointer; }
+    .option:hover { background: #eee; }
+    #timer { font-size: 2em; margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <h1>🧨 Level 2 – Idiom Time Bomb</h1>
+  <p id="questionNum"></p>
+  <p id="progressScore"></p>
+  <h2 id="idiom"></h2>
+  <div id="timer">10</div>
+  <div id="choices"></div>
+  <p id="feedback"></p>
+  <button class="button" onclick="nextQuestion()">Next</button>
+  <button class="button" onclick="goHome()">Back to Home</button>
+  <audio id="sound-correct" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+  <audio id="sound-wrong" src="https://actions.google.com/sounds/v1/cartoon/woodpecker_pecking.ogg"></audio>
+  <script>
+    const questions = [
+      { idiom: "Let the cat out of the bag", answer: "Reveal a secret", choices: ["Reveal a secret", "Cause confusion", "Win a prize", "Make a mistake", "Calm someone down"] },
+      { idiom: "Hit the nail on the head", answer: "Be exactly right", choices: ["Be exactly right", "Get angry", "Work hard", "Sleep deeply", "Lose hope"] },
+      { idiom: "The ball is in your court", answer: "It's your decision", choices: ["It's your decision", "Play fairly", "Give up", "Act surprised", "Be quiet"] },
+      { idiom: "When pigs fly", answer: "Something will never happen", choices: ["Something will never happen", "It will rain", "Try harder", "Be patient", "Lose control"] },
+      { idiom: "Cry over spilled milk", answer: "Be upset about something that cannot be changed", choices: ["Be upset about something that cannot be changed", "Fix a problem", "Drink quickly", "Tell a lie", "Act happy"] },
+      { idiom: "Get cold feet", answer: "Become nervous", choices: ["Become nervous", "Go to sleep", "Walk fast", "Catch a cold", "Get married"] },
+      { idiom: "Kill two birds with one stone", answer: "Achieve two things at once", choices: ["Achieve two things at once", "Cook dinner", "Win a game", "Travel far", "Say something twice"] },
+      { idiom: "Barking up the wrong tree", answer: "Accuse the wrong person", choices: ["Accuse the wrong person", "Climb a tree", "Be confused", "Ignore advice", "Ask for help"] },
+      { idiom: "It’s a small world", answer: "Meeting someone unexpectedly", choices: ["Meeting someone unexpectedly", "Traveling far", "Being shy", "Learning quickly", "Working late"] },
+      { idiom: "In the same boat", answer: "In the same situation", choices: ["In the same situation", "On vacation", "Winning a game", "Getting a reward", "Feeling sick"] },
+      { idiom: "Burn the candle at both ends", answer: "Do too many things", choices: ["Do too many things", "Light candles", "Sleep a lot", "Stay safe", "Hide feelings"] },
+      { idiom: "Pull someone’s leg", answer: "Joke with someone", choices: ["Joke with someone", "Help someone", "Stop someone", "Follow someone", "Fight someone"] },
+      { idiom: "Bite your tongue", answer: "Stop yourself from speaking", choices: ["Stop yourself from speaking", "Shout loudly", "Eat quickly", "Whisper", "Lie"] },
+      { idiom: "On thin ice", answer: "In a risky situation", choices: ["In a risky situation", "Being cold", "Traveling far", "Breaking rules", "Being shy"] },
+      { idiom: "The last straw", answer: "Final annoyance or problem", choices: ["Final annoyance or problem", "New idea", "Sudden success", "Harsh joke", "False hope"] },
+      { idiom: "A leopard can’t change its spots", answer: "People don't change", choices: ["People don't change", "Animals are dangerous", "Love is blind", "Luck will come", "Time flies"] },
+      { idiom: "Break a leg", answer: "Good luck", choices: ["Good luck", "Be careful", "Run fast", "Act poorly", "Fall down"] },
+      { idiom: "Don’t put all your eggs in one basket", answer: "Don’t risk everything in one place", choices: ["Don’t risk everything in one place", "Eat more", "Work less", "Stay silent", "Go early"] },
+      { idiom: "Keep your chin up", answer: "Stay positive", choices: ["Stay positive", "Look surprised", "Tell a joke", "Speak loudly", "Work harder"] },
+      { idiom: "Sit on the fence", answer: "Not decide", choices: ["Not decide", "Take a break", "Sleep outside", "Give up", "Win easily"] }
+    ];
+    let current = 0;
+    let score = 0;
+    let timer;
+    function startTimer() {
+      let timeLeft = 10;
+      document.getElementById("timer").innerText = timeLeft;
+      timer = setInterval(() => {
+        timeLeft--;
+        document.getElementById("timer").innerText = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          showFeedback(false);
+        }
+      }, 1000);
+    }
+    function loadQuestion() {
+      clearInterval(timer);
+      const q = questions[current];
+      document.getElementById("questionNum").innerText = `Question ${current + 1} of ${questions.length}`;
+      document.getElementById("progressScore").innerText = `Score: ${score} / ${questions.length}`;
+      document.getElementById("idiom").innerText = q.idiom;
+      document.getElementById("feedback").innerText = "";
+      document.getElementById("choices").innerHTML = "";
+      q.choices.forEach(c => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = c;
+        div.onclick = () => {
+          clearInterval(timer);
+          showFeedback(c === q.answer);
+        };
+        document.getElementById("choices").appendChild(div);
+      });
+      startTimer();
+    }
+    function showFeedback(correct) {
+      if (document.getElementById("feedback").innerText !== "") return; // Prevent multiple triggers
+      const q = questions[current];
+      if (correct) {
+        score++;
+        document.getElementById("sound-correct").play();
+        document.getElementById("feedback").innerHTML = `✅ Correct!<br>${q.answer}`;
+      } else {
+        document.getElementById("sound-wrong").play();
+        document.getElementById("feedback").innerHTML = `❌ Boom!<br>The correct answer was: <b>${q.answer}</b>`;
+      }
+      document.getElementById("progressScore").innerText = `Score: ${score} / ${questions.length}`;
+    }
+    function nextQuestion() {
+      if (current < questions.length - 1) {
+        current++;
+        loadQuestion();
+      } else {
+        document.body.innerHTML = `<h2>🎉 Game Complete!</h2><p>Your score: ${score} / ${questions.length}</p>`;
+      }
+    }
+    loadQuestion();
+  </script>
+</body>
+</html>
